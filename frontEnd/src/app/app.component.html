@@ -1,0 +1,116 @@
+<ngx-spinner type="ball-atom"></ngx-spinner>
+<p-card>
+  <ng-template pTemplate="header">
+    <div class="centro">
+      <h2>Sistema de Entradas y Salidas de Productos</h2>
+    </div>
+  </ng-template>
+  <p-tabView styleClass="tabview-custom">
+    <p-tabPanel>
+      <ng-template pTemplate = "header">
+        <i class="pi pi-calendar"></i>
+        <span class="font-medium ml-2">Productos</span>
+      </ng-template>
+      <p-table #dt
+        [value]="info"
+        [responsive]="true"
+        [paginator]="true"
+        [rows]="filas"
+        [loading]="loading"
+        [columns]="columnas"
+        [resizableColumns]="true"
+        sortMode="multiple"
+        styleClass="p-datatable-striped"
+        columnResizeMode="expand"
+        [scrollable]="true"
+        scrollHeight="300px"
+        [rowsPerPageOptions]="[5, 10, 20, 50, 100]"
+        [globalFilterFields]="['nombre_prod', 'cant_prod', 'fecha_prod']">
+        <ng-template pTemplate="caption">
+          <div class="table-header">
+            <span class="p-input-icon-left">
+              <i class="pi pi-search"></i>
+              <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Busqueda..." [disabled]="loading" />
+            </span>
+            <button type="button" pButton icon="pi pi-external-link" iconPos="left" (click)="open()" label="Agregar" style="margin-left: 5px;" pTooltip="Agregar Producto" tooltipPosition="bottom" [disabled]="loading" class="p-button-info"></button>
+            <button *ngIf="info" type="button" pButton icon="pi pi-file-excel" iconPos="left" (click)="descargarExcel()" style="margin-left: 5px" pTooltip="Descargar Excel" tooltipPosition="bottom" [disabled]="loading" class="p-button-success"></button>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header" let-columns>
+          <tr>
+            <th *ngFor="let columnas of columns" pResizableColumn style="width: 11em" class="text-center"
+              pSortableColumn="{{columnas.field}}">{{columnas.header}} <p-sortIcon field="{{columnas.field}}"></p-sortIcon>
+            </th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-info>
+          <tr class="slide-in">
+            <td class="text-center">{{ info.nombre_prod }}</td>
+            <td class="text-center">
+              <div [ngClass]="{'outofstockzero': info.cant_prod === 0, 'outofstock': (info.cant_prod > 0 && info.cant_prod < 10), 'lowstock': (info.cant_prod >= 10 && info.cant_prod < 20),'instock': info.cant_prod >= 20}">
+                {{info.cant_prod}}
+              </div>
+            </td>
+            <td class="text-center">{{ info.coment_prod}}</td>
+            <td class="text-center">{{ info.fecha_prod | date: 'dd/MM/yyyy'}}</td>
+            <td class="text-center">
+              <button style="margin-right: .5rem" pTooltip="Editar Producto" (click)="openUpdate(info)" tooltipPosition="bottom" icon="pi pi-pencil" iconPos="left" pButton type="button" class="p-button-rounded p-button-success"></button>
+              <button style="margin-right: .5rem" pTooltip="Eliminar Producto" (click)="deleteProd(info.id)" tooltipPosition="bottom" icon="pi pi-trash" iconPos="left" pButton type="button" class="p-button-rounded p-button-danger"></button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage" let-columns>
+            <tr>
+              <td [attr.colspan]="columns.length">
+              <h4>No hay datos</h4>
+              </td>
+            </tr>
+        </ng-template>
+      </p-table>
+    </p-tabPanel>
+    <p-tabPanel header="Header II">
+      <ng-template pTemplate = "header">
+        <i class="pi pi-user"></i>
+        <span class="font-medium ml-2">Acerca de</span>
+      </ng-template>
+      <p>Sistema para registrar entradas y salidas de productos varios.</p>
+    </p-tabPanel>
+  </p-tabView>
+  <ng-template pTemplate="footer">
+    <div class="centro">
+      &copy; Copyright 2023 by<span class="font-medium ml-2">Fernanda Arnoudts, </span><span style="margin-left: 0.5em;">All rights reserved.</span>
+    </div>
+  </ng-template>
+</p-card>
+
+<p-dialog [(visible)]="displayDialog" [style]="{width: '50vw'}" [transitionOptions]="'200ms'">
+  <p-header class="panel-danger">
+      {{ titleModal }}
+  </p-header>
+  <div class="grid p-fluid">
+    <div class="col-12 md:col-4">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-shopping-cart"></i></span>
+          <input type="text" [(ngModel)]="nombreProd" pInputText placeholder="Nombre">
+        </div>
+    </div>
+    <div class="col-12 md:col-4">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-plus-circle"></i></span>
+          <input type="number" [min]="0" [max]="1000" [(ngModel)]="cantProd" pInputText placeholder="Cantidad">
+        </div>
+    </div>
+    <div class="col-12 md:col-4">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-comment"></i></span>
+          <textarea [rows]="2" [cols]="30" [(ngModel)]="comentProd" pInputTextarea placeholder="Comentario"></textarea>
+        </div>
+    </div>
+  </div>
+  <p-footer>
+    <button *ngIf="op=='Add'" type="button" class="btn btn-outline-primary" (click)="agregarProd()">{{ textBottom }}</button>
+    <button *ngIf="op=='Edit'" type="button" class="btn btn-outline-success" (click)="editarProd()">{{ textBottom }}</button>
+    <button type="button" class="btn btn-outline-info" (click)="clean()">{{ btnClean }}</button>
+    <button type="button" class="btn btn-outline-dark" (click)="displayDialog=false">{{ lbBtnModal }}</button>
+  </p-footer>
+</p-dialog>
